@@ -2,7 +2,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 import yaml
 import os.path
-from com.pg.utils import aws_utils as ut
+from com.ETL.utils import aws_utils as ut
 
 if __name__ == '__main__':
     # os.environ["PYSPARK_SUBMIT_ARGS"] = (
