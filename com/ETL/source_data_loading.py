@@ -34,11 +34,12 @@ if __name__ == '__main__':
     hadoop_conf.set("fs.s3a.access.key", app_secret["s3_conf"]["access_key"])
     hadoop_conf.set("fs.s3a.secret.key", app_secret["s3_conf"]["secret_access_key"])
 
+    src = 'CP'
     src_list = app_conf["source_list"]
     for src in src_list:
         src_conf = app_conf[src]
         src_path = "s3a://" + app_conf["s3_conf"]["s3_bucket"] + "/" + app_conf["s3_conf"]["staging_dir_loc"] + "/" + src
-        if src == 'CP':
+        if src == 'SB':
             txn_df = ut.read_from_mysql(spark,
                                         src_conf["mysql_conf"]["dbtable"],
                                         src_conf["mysql_conf"]["partition_column"],
