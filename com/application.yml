@@ -6,7 +6,7 @@ source_list:
 
 s3_conf:
   s3_bucket: ketandatabucket
-  staging_dir: staging
+  staging_dir_loc: staging
 
 
 SB:

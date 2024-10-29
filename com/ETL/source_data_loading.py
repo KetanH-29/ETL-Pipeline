@@ -37,7 +37,7 @@ if __name__ == '__main__':
     src_list = app_conf["source_list"]
     for src in src_list:
         src_conf = app_conf[src]
-        src_path = "s3a://" + app_conf["s3_conf"]["s3_bucket"] + "/" + app_conf["s3_conf"]["staging_dir"] + "/" + src
+        src_path = "s3a://" + app_conf["s3_conf"]["s3_bucket"] + "/" + app_conf["s3_conf"]["staging_dir_loc"] + "/" + src
         if src == 'CP':
             txn_df = ut.read_from_mysql(spark,
                                         src_conf["mysql_conf"]["dbtable"],
