@@ -6,9 +6,9 @@ import utils.aws_utils as ut
 
 if __name__ == '__main__':
 
-    os.environ["PYSPARK_SUBMIT_ARGS"] = (
-         '--packages "org.mongodb.spark:mongo-spark-connector_2.11:2.4.1" pyspark-shell'
-    )
+    #os.environ["PYSPARK_SUBMIT_ARGS"] = (
+    #    '--packages "org.mongodb.spark:mongo-spark-connector_2.11:2.4.1" pyspark-shell'
+    #)
     current_dir = os.path.abspath(os.path.dirname(__file__))
     app_config_path = os.path.abspath(current_dir + "../../" + "application.yml")
     app_secrets_path = os.path.abspath(current_dir + "../../" + ".secrets")
