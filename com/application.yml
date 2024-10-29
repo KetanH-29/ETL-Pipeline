@@ -4,9 +4,10 @@ source_list:
   -CP
   -ADDR
 
-s3_conf:
-  s3_bucket: ketandatabucket
-  staging_dir_loc: staging
+CP:
+  s3_conf:
+    s3_bucket: ketandatabucket
+    staging_dir_loc: staging
 
 
 SB:
@@ -28,8 +29,8 @@ ADDR:
     database: school
     collection: students
 
-CP:
-  redshift_conf:
-    filetype: csv
-    delimiter: |
+
+redshift_conf:
+  filetype: csv
+  delimiter: |
 
