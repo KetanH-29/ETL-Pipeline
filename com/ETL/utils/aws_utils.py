@@ -37,7 +37,7 @@ def read_from_mysql(spark, table_name, part_col, secret_conf):
     return df
 
 
-def read_from_sftp(spark, app_secret, secret_file):
+def read_from_sftp(spark, app_secret, secret_file, filepath):
     return spark.read \
         .format("com.springml.spark.sftp")\
         .option("host", app_secret["sftp_conf"]["hostname"])\
@@ -46,17 +46,17 @@ def read_from_sftp(spark, app_secret, secret_file):
         .option("pem", secret_file)\
         .option("fileType", "csv")\
         .option("delimiter", "|")\
-        .load()
+        .load(filepath)
 
 
 
-def read_from_s3(spark, file_path ,delimiter='|', header='true'):
+def read_from_s3(spark, path, delimiter='|', header='true'):
     print("\nReading data from S3,")
     df = spark.read \
         .option("header", header) \
         .format("csv") \
         .option("delimiter", delimiter) \
-        .load(file_path)
+        .load(path)
     return df
 
 
