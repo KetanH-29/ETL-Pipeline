@@ -19,11 +19,11 @@ if __name__ == '__main__':
     app_secret = yaml.load(secret, Loader=yaml.FullLoader)
 
     # create the spark object
-    spark = SparkSession\
-        .builder\
-        .appName("Data Ingestion from Project Sources")\
-        .config("spark.mongodb.input.uri", app_secret["mongodb_conf"]["uri"] + "/customer.address") \
-        .config('spark.jars.packages', 'org.mongodb.spark:mongo-spark-connector_2.11:2.2.2')\
+    spark = SparkSession \
+        .builder \
+        .appName("Read ingestion enterprise applications") \
+        .master('local[*]') \
+        .config("spark.mongodb.input.uri", app_secret["mongodb_config"]["uri"])\
         .getOrCreate()
 
     # to log only the error logs in the console
