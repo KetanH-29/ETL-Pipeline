@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
         elif src == 'CP':
             txn_df = ut.read_from_s3(spark,
-                                "s3a://" + app_conf["s3_conf"]["s3_bucket"] + src_conf["filetype"])
+                                "s3a://" + app_conf["s3_conf"]["s3_bucket"] + src_conf["filename"])
             cust_df = txn_df.withColumn("ins_dt", current_date())
             cust_df.show(5)
             # write data to S3
