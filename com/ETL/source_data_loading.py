@@ -34,7 +34,7 @@ if __name__ == '__main__':
     hadoop_conf.set("fs.s3a.access.key", app_secret["s3_conf"]["access_key"])
     hadoop_conf.set("fs.s3a.secret.key", app_secret["s3_conf"]["secret_access_key"])
 
-    src = 'CP'
+
     src_list = app_conf["source_list"]
     for src in src_list:
         src_conf = app_conf[src]
