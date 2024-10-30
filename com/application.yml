@@ -1,8 +1,8 @@
 source_list:
-  - CP
-  - SB
+#  - CP
+#  - SB
   - OL
-  - ADDR
+#  - ADDR
 
 s3_conf:
   s3_bucket: ketandatabucket
