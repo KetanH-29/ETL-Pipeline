@@ -22,7 +22,7 @@ OL:
       filetype: csv
       delimiter: |
       directory: /home/ubuntu/data
-      pem: "sparkNew.pem"
+
 
 ADDR:
   mongodb_config:
