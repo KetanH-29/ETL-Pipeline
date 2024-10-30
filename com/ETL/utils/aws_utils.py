@@ -37,15 +37,15 @@ def read_from_mysql(spark, table_name, part_col, secret_conf):
     return df
 
 
-def read_from_sftp(spark, app_secret, secret_file):
+def read_from_sftp(spark, app_secret, secret_file, src_conf):
     return spark.read \
         .format("com.springml.spark.sftp")\
         .option("host", app_secret["sftp_conf"]["hostname"])\
         .option("port", app_secret["sftp_conf"]["port"])\
         .option("username", app_secret["sftp_conf"]["username"])\
         .option("pem", secret_file)\
-        .option("fileType", "csv")\
-        .option("delimiter", "|")\
+        .option("fileType", src_conf["OL"]["sftp_conf]["csv"])\
+        .option("delimiter", src_conf["OL"]["sftp_conf"]["delimiter"])\
         .load()
 
 
