@@ -57,7 +57,7 @@ if __name__ == '__main__':
             # Reading Data from SFTP server
             txn_df = ut.read_from_sftp(spark,
                                        app_secret,
-                                       src_conf["OL"]["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv")
+                                       src_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv")
             txn_df = txn_df.withColumn("ins_dt", current_date())
             txn_df.show(5, False)
             # write data to S3 in parquet format
