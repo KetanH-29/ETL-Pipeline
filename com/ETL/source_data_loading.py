@@ -53,13 +53,18 @@ if __name__ == '__main__':
                 .partitionBy("ins_dt") \
                 .parquet(src_path)
 
+
         elif src == 'OL':
+
             # Reading Data from SFTP server
-            txn_df = ut.read_from_sftp(spark,
-                                       app_secret,
-                                       os.path.abspath(current_dir + "/../" + app_secret["sftp_conf"]["pem"]),
-                                       src_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv"),
-                                       src_conf
+
+            txn_df = ut.read_from_sftp(
+                spark,
+                app_secret,
+                os.path.abspath(current_dir + "/../" + app_secret["sftp_conf"]["pem"]),
+                src_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv",
+                src_conf  # Ensure this line is properly aligned
+            )
             txn_df = txn_df.withColumn("ins_dt", current_date())
             txn_df.show(5, False)
             # write data to S3 in parquet format
