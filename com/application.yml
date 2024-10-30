@@ -1,28 +1,24 @@
 source_list:
-#  - CP
-#  - SB
+  - CP
+  - SB
   - OL
-#  - ADDR
-
+  - ADDR
 
 s3_conf:
   s3_bucket: ketandatabucket
   staging_dir_loc: staging
 
-
 SB:
   mysql_conf:
     dbtable: testdb.TRANSACTIONSYNC
     partition_column: App_Transaction_Id
-    query : "(select * from testdb.TRANSACTIONSYNC) as t"
-
+    query: "(select * from testdb.TRANSACTIONSYNC) as t"
 
 OL:
   sftp_conf:
-      filetype: csv
-      delimiter: |
-      directory: /home/ubuntu/data
-
+    filetype: csv
+    delimiter: |
+    directory: /home/ubuntu/data
 
 ADDR:
   mongodb_config:
@@ -31,6 +27,8 @@ ADDR:
 
 CP:
   redshift_conf:
-  filetype: csv
-  delimiter: |
-
+    host: your_redshift_host
+    port: your_redshift_port
+    database: your_database_name
+    filetype: csv
+    delimiter: |

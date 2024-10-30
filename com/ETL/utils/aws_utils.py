@@ -45,7 +45,7 @@ def read_from_sftp(spark, app_secret, filepath, secret_file, src_conf):
         .option("username", app_secret["sftp_conf"]["username"]) \
         .option("pem", secret_file) \
         .option("fileType", src_conf["sftp_conf"]["filetype"]) \
-        .option("delimiter", "|") \
+        .option("delimiter", src_conf["OL"]["sftp_conf"]["delimiter"]) \
         .load(filepath)
 
 
