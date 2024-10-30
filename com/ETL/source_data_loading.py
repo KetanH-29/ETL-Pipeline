@@ -10,6 +10,7 @@ if __name__ == '__main__':
     #    '--packages "org.mongodb.spark:mongo-spark-connector_2.11:2.4.1" pyspark-shell'
     #)
     current_dir = os.path.abspath(os.path.dirname(__file__))
+    pem_file_path = os.path.join(current_dir, "your_pem_file.pem")
     app_config_path = os.path.abspath(current_dir + "../../" + "application.yml")
     app_secrets_path = os.path.abspath(current_dir + "/" + ".secrets")
 
@@ -61,6 +62,7 @@ if __name__ == '__main__':
             txn_df = ut.read_from_sftp(
                 spark,
                 app_secret,
+                pem_file_path,
                 os.path.abspath(current_dir + "/../" + app_secret["sftp_conf"]["pem"]),
                 src_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv",
                 src_conf  # Ensure this line is properly aligned
