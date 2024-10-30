@@ -1,7 +1,7 @@
 source_list:
-  - CP
+#  - CP
 #  - SB
-#  - QL
+  - QL
 #  - ADDR
 
 
@@ -22,7 +22,7 @@ OL:
       filetype: csv
       delimiter: |
       directory: /home/ubuntu/data
-
+      pem: "sparkNew.pem"
 
 ADDR:
   mongodb_config:
