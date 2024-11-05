@@ -39,6 +39,10 @@ def read_from_mysql(spark, table_name, part_col, secret_conf):
 
 def read_from_sftp(spark, app_secret, secret_file, filepath):
     print(f"Loading file from: {filepath}")
+    print(f"Host: {app_secret['sftp_conf']['hostname']}")
+    print(f"Port: {app_secret['sftp_conf']['port']}")
+    print(f"Username: {app_secret['sftp_conf']['username']}")
+    print(f"PEM file path: {secret_file}")
     return spark.read \
         .format("com.springml.spark.sftp")\
         .option("host", app_secret["sftp_conf"]["hostname"])\
