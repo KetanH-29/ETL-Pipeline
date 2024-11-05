@@ -59,7 +59,7 @@ if __name__ == '__main__':
         elif src == 'OL':
 
             # Reading Data from SFTP server
-
+            print(src_conf["sftp_conf"]["directory"])
             txn_df = ut.read_from_sftp(
                 spark,
                 app_secret,
