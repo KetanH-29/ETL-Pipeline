@@ -67,7 +67,7 @@ if __name__ == '__main__':
             txn_df = ut.read_from_sftp(
                 spark,
                 app_secret,
-                os.path.abspath(current_dir + "/../../" + app_secret["sftp_conf"]["pem"]),
+                os.path.abspath(current_dir + "/../" + app_secret["sftp_conf"]["pem"]),
                 src_conf
             )
 
