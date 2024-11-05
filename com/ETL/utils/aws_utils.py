@@ -38,6 +38,7 @@ def read_from_mysql(spark, table_name, part_col, secret_conf):
 
 
 def read_from_sftp(spark, app_secret, secret_file, filepath):
+    print(f"Loading file from: {filepath}")
     return spark.read \
         .format("com.springml.spark.sftp")\
         .option("host", app_secret["sftp_conf"]["hostname"])\
@@ -46,7 +47,6 @@ def read_from_sftp(spark, app_secret, secret_file, filepath):
         .option("pem", secret_file)\
         .option("fileType", "csv")\
         .option("delimiter", "|")\
-        .print(f"Loading file from: {filepath}")\
         .load(filepath)
 
 
