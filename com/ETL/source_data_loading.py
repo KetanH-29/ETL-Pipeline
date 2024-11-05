@@ -63,8 +63,8 @@ if __name__ == '__main__':
             txn_df = ut.read_from_sftp(
                 spark,
                 app_secret,
-                os.path.abspath(current_dir + "/../../" + app_secret["sftp_conf"]["pem"]),
-                src_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv"
+                file_path=os.path.abspath(src_conf["sftp_conf"]["directory"], "receipts_delta_GBR_14_10_2017.csv"),
+                secret_file=src_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv"
             )
 
             txn_df = txn_df.withColumn("ins_dt", current_date())
@@ -112,6 +112,6 @@ if __name__ == '__main__':
 
 
 
-# spark-submit --packages "org.mongodb.spark:mongo-spark-connector_2.11:2.4.1,mysql:mysql-connector-java:8.0.15,com.springml:spark-sftp_2.11:1.1.1,org.apache.hadoop:hadoop-aws:2.7.4" ETL/source_data_loading.py
+# spark-submit --packages "org.mongodb.spark:mongo-spark-connector_2.11:2.4.1,mysql:mysql-connector-java:8.0.15,com.springml:spark-sftp_2.11:1.1.1,org.apache.hadoop:hadoop-aws:2.7.4" com/ETL/source_data_loading.py
 
 # spark-submit   --packages  "org.mongodb.spark:mongo-spark-connector_2.11:2.2.2,org.apache.hadoop:hadoop-aws:2.7.4" com/ETL/source_data_loading.py
