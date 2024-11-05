@@ -59,12 +59,15 @@ if __name__ == '__main__':
         elif src == 'OL':
 
             # Reading Data from SFTP server
+            file_path = os.path.join(src_conf["sftp_conf"]["directory"], "receipts_delta_GBR_14_10_2017.csv")
+            file_path = os.path.abspath(file_path)
 
             txn_df = ut.read_from_sftp(
                 spark,
                 app_secret,
-                file_path=os.path.abspath(src_conf["sftp_conf"]["directory"], "receipts_delta_GBR_14_10_2017.csv"),
-                secret_file=src_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv"
+                os.path.abspath(current_dir + "/../../" + app_secret["sftp_conf"]["pem"]),
+                src_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv",
+                file_path
             )
 
             txn_df = txn_df.withColumn("ins_dt", current_date())
