@@ -1,117 +1,105 @@
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
+import utils.utilities as ut
 import yaml
 import os.path
-import utils.aws_utils as ut
+from pyspark.sql.types import StructType, IntegerType, BooleanType,DoubleType
 
 if __name__ == '__main__':
-
-    #os.environ["PYSPARK_SUBMIT_ARGS"] = (
-    #    '--packages "org.mongodb.spark:mongo-spark-connector_2.11:2.4.1" pyspark-shell'
-    #)
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    pem_file_path = os.path.join(current_dir, "your_pem_file.pem")
-    app_config_path = os.path.abspath(current_dir + "../../" + "application.yml")
-    app_secrets_path = os.path.abspath(current_dir + "/" + ".secrets")
+    app_config_path = os.path.abspath(current_dir + "/../../" + "application.yml")
+    app_secrets_path = os.path.abspath(current_dir + "/../../" + ".secrets")
 
     conf = open(app_config_path)
     app_conf = yaml.load(conf, Loader=yaml.FullLoader)
     secret = open(app_secrets_path)
     app_secret = yaml.load(secret, Loader=yaml.FullLoader)
 
-    # create the spark object
+    # Create the SparkSession
     spark = SparkSession \
         .builder \
-        .appName("Read ingestion enterprise applications") \
-        .config("spark.mongodb.input.uri", app_secret["mongodb_conf"]["uri"])\
+        .appName("DataFrames examples") \
+        .config("spark.mongodb.input.uri", app_secret["mongodb_config"]["uri"])\
         .getOrCreate()
-
-    # to log only the error logs in the console
     spark.sparkContext.setLogLevel('ERROR')
 
-    # Reading Data from S3
+    # Setup spark to use s3
     hadoop_conf = spark.sparkContext._jsc.hadoopConfiguration()
     hadoop_conf.set("fs.s3a.access.key", app_secret["s3_conf"]["access_key"])
     hadoop_conf.set("fs.s3a.secret.key", app_secret["s3_conf"]["secret_access_key"])
 
-
     src_list = app_conf["source_list"]
+    # Check if passed from cmd line arg then override the above (e.g. source_list=OL,SB)
     for src in src_list:
+        output_path = "s3a://" + app_conf["s3_conf"]["s3_bucket"] + "/" + app_conf["s3_conf"]["staging_dir"] + "/" + src
         src_conf = app_conf[src]
+        if src == 'OL':
+            print('Read loyalty data from SFTP folder and write it to S3 bucket')
+            ol_txn_df = spark.read\
+                .format("com.springml.spark.sftp")\
+                .option("host", app_secret["sftp_conf"]["hostname"])\
+                .option("port", app_secret["sftp_conf"]["port"])\
+                .option("username", app_secret["sftp_conf"]["username"])\
+                .option("pem", os.path.abspath(current_dir + "/../../" + app_secret["sftp_conf"]["pem"]))\
+                .option("fileType", "csv")\
+                .option("delimiter", "|")\
+                .load(src_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv")
+            ol_txn_df = ol_txn_df.withColumn("ins_dt", current_date())
+            ol_txn_df.show(5, False)
+            ut.write_to_s3(ol_txn_df, output_path)
 
-        src_path = "s3a://" + app_conf["s3_conf"]["s3_bucket"] + "/" + app_conf["s3_conf"]["staging_dir_loc"] + "/" + src
-        if src == 'SB':
-            txn_df = ut.read_from_mysql(spark,
-                                        src_conf["mysql_conf"]["dbtable"],
-                                        src_conf["mysql_conf"]["partition_column"],
-                                        app_secret)
+        elif src == 'SB':
+            print('Read sales data from MySQL db and write it to S3 bucket')
+            jdbc_params = {"url": ut.get_mysql_jdbc_url(app_secret),
+                          "lowerBound": "1",
+                          "upperBound": "100",
+                          "dbtable": src_conf["mysql_conf"]["dbtable"],
+                          "numPartitions": "2",
+                          "partitionColumn": src_conf["mysql_conf"]["partition_column"],
+                          "user": app_secret["mysql_conf"]["username"],
+                          "password": app_secret["mysql_conf"]["password"]
+                           }
 
+            print("\nReading data from MySQL DB using SparkSession.read.format(),")
+            txn_df = spark\
+                .read.format("jdbc")\
+                .option("driver", "com.mysql.cj.jdbc.Driver")\
+                .options(**jdbc_params)\
+                .load()
             txn_df = txn_df.withColumn("ins_dt", current_date())
-            txn_df.show(5, False)
-            # write data to S3 in parquet format
-            txn_df\
-                .write \
-                .mode("overwrite") \
-                .partitionBy("ins_dt") \
-                .parquet(src_path)
-
-
-        elif src == 'OL':
-
-            # Reading Data from SFTP server
-            print(src_conf["sftp_conf"]["directory"])
-            txn_df = ut.read_from_sftp(
-                spark,
-                app_secret,
-                os.path.abspath(current_dir + "/../../" + app_secret["sftp_conf"]["pem"]),
-                src_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv"
-            )
-
-            txn_df = txn_df.withColumn("ins_dt", current_date())
-            txn_df.show(5, False)
-            # write data to S3 in parquet format
-            txn_df\
-                .write \
-                .mode("overwrite") \
-                .partitionBy("ins_dt") \
-                .parquet(src_path)
+            txn_df.show()
+            ut.write_to_s3(txn_df, output_path)
 
         elif src == 'CP':
-            txn_df = ut.read_from_s3(spark,
-                                "s3a://" + app_conf["s3_conf"]["s3_bucket"] + src_conf["filename"])
-            cust_df = txn_df.withColumn("ins_dt", current_date())
-            cust_df.show(5)
-            # write data to S3
-            cust_df \
-                .write \
-                .mode("overwrite") \
-                .partitionBy("ins_dt") \
-                .parquet(src_path)
+            print("\nReading customers data from S3 and write it to s3") # kc_extract.. KC_Extract_1_20171009
+            cp_df = spark.read \
+                .option("mode", "DROPMALFORMED") \
+                .option("delimiter", "|") \
+                .option('header', 'true')\
+                .option("inferSchema", "true") \
+                .csv("s3a://" + src_conf["s3_conf"]["s3_bucket"] + "/" + src_conf["s3_conf"]["filename"])
+            cp_df = cp_df.withColumn("ins_dt", current_date())
+            ut.write_to_s3(cp_df, output_path)
 
         elif src == 'ADDR':
-            # Reading from mongodb
-            txn_df = ut.read_from_mongoDB(spark,
-                                          src_conf["mongodb_config"]["database"],
-                                          src_conf["mongodb_config"]["collection"])
-            txn_df = txn_df.withColumn("ins_dt", current_date())
-            txn_df.show(5)
-
-            txn_df = txn_df.withColumn("street", col("address.street"))\
-                .withColumn("City", col("address.city"))\
-                .withColumn("state", col("address.state"))\
-                .drop('address')\
-                .drop('_id')
-
-            txn_df.show(5)
-            # write data to S3
-            txn_df \
-                .write \
-                .mode("overwrite") \
-                .partitionBy("ins_dt") \
-                .parquet(src_path)
+            cust_addr = spark\
+                .read\
+                .format("com.mongodb.spark.sql.DefaultSource")\
+                .option("database", src_conf["mongodb_config"]["database"])\
+                .option("collection", src_conf["mongodb_config"]["collection"])\
+                .load()
+            cust_addr = cust_addr\
+                .select(col("consumer_id"),
+                        col("mobile-no").alias("mobile"),
+                        col("address.street").alias("address"),
+                        col("address.city").alias("city"),
+                        col("address.state").alias("state")
+                        )
+            # "consumer_id":"I034867789V","address":{"street":"aca","city":"bangalore","state":"karnataka"},"mobile-no":"7789327282"}
+            cust_addr = cust_addr.withColumn("ins_dt", current_date())
+            cust_addr.show()
+            ut.write_to_s3(cust_addr, output_path)
 
 
-
-# spark-submit --packages "org.mongodb.spark:mongo-spark-connector_2.11:2.4.1,mysql:mysql-connector-java:8.0.15,com.springml:spark-sftp_2.11:1.1.1,org.apache.hadoop:hadoop-aws:2.7.4" com/ETL/source_data_loading.py
-
-# spark-submit   --packages  "org.mongodb.spark:mongo-spark-connector_2.11:2.2.2,org.apache.hadoop:hadoop-aws:2.7.4" com/ETL/source_data_loading.py
+# spark-submit --packages "org.apache.hadoop:hadoop-aws:2.7.4,org.mongodb.spark:mongo-spark-connector_2.11:2.4.1,mysql:mysql-connector-java:8.0.15,com.springml:spark-sftp_2.11:1.1.1" com/dsm/source_data_loading.py
